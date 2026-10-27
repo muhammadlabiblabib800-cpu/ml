@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>RE-NÉO Family Finance — Keuangan Rumah Tangga</title>
+  
+  <!-- PWA Theme Color & Apple Meta -->
+  <meta name="theme-color" content="#7626B8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="RE-NÉO">
+  <meta name="description" content="Aplikasi pencatatan keuangan rumah tangga praktis, aman, dan ramah ibu. Data tersimpan lokal di perangkat Anda.">
+
+  <!-- PWA Manifest & Icons -->
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
+  <link rel="apple-touch-icon" href="./icon-192.png">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            reneo: {
+              50: '#F7F5FA',
+              100: '#F3ECFC',
+              200: '#EBDDFA',
+              300: '#D6BAF5',
+              400: '#B075EB',
+              500: '#9444DF',
+              600: '#7626B8',
+              700: '#57158D',
+              800: '#411068',
+              900: '#260641',
+            },
+            income: {
+              DEFAULT: '#21865B',
+              soft: '#E5F5EC',
+              dark: '#165D3F'
+            },
+            expense: {
+              DEFAULT: '#C44755',
+              soft: '#FCEBED',
+              dark: '#932D3A'
+            },
+            warning: {
+              DEFAULT: '#B87516',
+              soft: '#FFF3D9'
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          borderRadius: {
+            'reneo': '22px',
+            'reneo-sm': '14px',
+          },
+          boxShadow: {
+            'reneo': '0 8px 28px rgba(46, 24, 69, 0.07)',
+            'reneo-hover': '0 12px 32px rgba(46, 24, 69, 0.12)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #F7F5FA;
+      color: #26212D;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #F3ECFC; }
+    ::-webkit-scrollbar-thumb { background: #D6BAF5; border-radius: 10px; }
+
+    @keyframes pulse-ring {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.15); opacity: 0.4; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+    .animate-voice-pulse {
+      animation: pulse-ring 1.5s infinite ease-in-out;
+    }
+
+    .pb-safe {
+      padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between antialiased selection:bg-reneo-200 selection:text-reneo-800">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-30 bg-white/90 backdrop-blur-md border-b border-reneo-100 px-4 py-3 md:px-8">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-reneo-sm bg-reneo-600 text-white flex items-center justify-center font-bold text-xl shadow-md">
+          <i class="fa-solid fa-wallet"></i>
+        </div>
+        <div>
+          <h1 class="font-extrabold text-lg leading-none text-reneo-900 tracking-tight">RE-NÉO</h1>
+          <p class="text-xs text-reneo-600 font-medium">Family Finance Ibu</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2">
+        <button id="btnVoiceInputHeader" onclick="openVoiceModal()" title="Catat dengan Suara" class="flex items-center gap-2 bg-reneo-100 hover:bg-reneo-200 text-reneo-700 px-3 py-2 rounded-reneo-sm font-semibold text-xs transition duration-200">
+          <i class="fa-solid fa-microphone text-reneo-600"></i>
+          <span class="hidden sm:inline">Catat Suara</span>
+        </button>
+        <button onclick="switchTab('more')" class="w-9 h-9 rounded-full bg-reneo-50 text-reneo-700 flex items-center justify-center hover:bg-reneo-100 transition">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER & ROUTER VIEWS -->
+  <main class="flex-grow max-w-4xl w-full mx-auto px-4 py-5 md:px-8 pb-safe">
+
+    <!-- VIEW: BERANDA (DASHBOARD) -->
+    <section id="view-dashboard" class="space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+        <div>
+          <h2 class="text-2xl font-bold text-reneo-900">Ringkasan Keuangan</h2>
+          <p class="text-xs text-gray-500" id="dashTodayDate">Hari ini</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <label for="dashMonthFilter" class="text-xs text-gray-500 font-medium">Periode:</label>
+          <input type="month" id="dashMonthFilter" onchange="renderDashboard()" class="bg-white border border-reneo-200 rounded-reneo-sm px-3 py-1.5 text-xs font-semibold text-reneo-900 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+        </div>
+      </div>
+
+      <div class="relative overflow-hidden bg-gradient-to-br from-reneo-600 via-reneo-700 to-reneo-900 text-white p-6 rounded-reneo shadow-reneo">
+        <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/10 rounded-full blur-xl pointer-events-none"></div>
+        <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-reneo-400/20 rounded-full blur-2xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col gap-4">
+          <div class="flex justify-between items-start">
+            <div>
+              <span class="text-xs uppercase font-semibold text-reneo-200 tracking-wider">Total Saldo Tercatat</span>
+              <div id="dashTotalBalance" class="text-3xl sm:text-4xl font-extrabold tracking-tight mt-1">Rp0</div>
+            </div>
+            <button onclick="openOpeningBalanceModal()" class="text-xs bg-white/20 hover:bg-white/30 text-white px-2.5 py-1.5 rounded-lg transition backdrop-blur-sm flex items-center gap-1.5">
+              <i class="fa-solid fa-pen-to-square"></i> Saldo Awal
+            </button>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 pt-4 border-t border-white/15">
+            <div class="bg-white/10 backdrop-blur-md p-3 rounded-reneo-sm">
+              <div class="flex items-center gap-2 text-income-soft text-xs font-medium mb-1">
+                <i class="fa-solid fa-arrow-down-left text-green-300"></i> Uang Masuk
+              </div>
+              <div id="dashPeriodIncome" class="text-lg font-bold text-white">Rp0</div>
+            </div>
+            <div class="bg-white/10 backdrop-blur-md p-3 rounded-reneo-sm">
+              <div class="flex items-center gap-2 text-expense-soft text-xs font-medium mb-1">
+                <i class="fa-solid fa-arrow-up-right text-rose-300"></i> Uang Keluar
+              </div>
+              <div id="dashPeriodExpense" class="text-lg font-bold text-white">Rp0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <button onclick="openTransactionModal('income')" class="flex items-center justify-center gap-2 bg-income-soft text-income-dark hover:bg-emerald-100 font-bold py-3 px-4 rounded-reneo-sm shadow-sm transition">
+          <i class="fa-solid fa-plus-circle text-income"></i> + Uang Masuk
+        </button>
+        <button onclick="openTransactionModal('expense')" class="flex items-center justify-center gap-2 bg-expense-soft text-expense-dark hover:bg-rose-100 font-bold py-3 px-4 rounded-reneo-sm shadow-sm transition">
+          <i class="fa-solid fa-minus-circle text-expense"></i> + Uang Keluar
+        </button>
+      </div>
+
+      <div class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-reneo-900 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-reneo-600"></i> Grafik Arus Kas Bulan Ini
+          </h3>
+          <span class="text-xs text-gray-400">7 Hari Terakhir</span>
+        </div>
+        <div id="dashChartContainer" class="w-full h-44 flex items-end justify-between gap-2 pt-4"></div>
+      </div>
+
+      <div class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-bold text-reneo-900 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-pie-chart text-reneo-600"></i> Status Anggaran Bulanan
+          </h3>
+          <button onclick="switchTab('budgets')" class="text-xs font-semibold text-reneo-600 hover:underline">Kelola Anggaran &rarr;</button>
+        </div>
+        <div id="dashBudgetWidget" class="space-y-3"></div>
+      </div>
+
+      <div class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo">
+        <div class="flex justify-between items-center mb-3">
+          <h3 class="font-bold text-reneo-900 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-file-invoice-dollar text-reneo-600"></i> Tagihan Belum Dibayar
+          </h3>
+          <button onclick="openSubPage('bills')" class="text-xs font-semibold text-reneo-600 hover:underline">Lihat Semua &rarr;</button>
+        </div>
+        <div id="dashBillsWidget" class="space-y-2"></div>
+      </div>
+
+      <div class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-bold text-reneo-900 text-sm flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-reneo-600"></i> Transaksi Terakhir
+          </h3>
+          <button onclick="switchTab('transactions')" class="text-xs font-semibold text-reneo-600 hover:underline">Lihat Semua &rarr;</button>
+        </div>
+        <div id="dashRecentTxList" class="divide-y divide-gray-100"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: TRANSAKSI -->
+    <section id="view-transactions" class="space-y-5 hidden">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-reneo-900">Daftar Transaksi</h2>
+          <p class="text-xs text-gray-500">Semua catatan uang masuk & keluar</p>
+        </div>
+        <button onclick="openTransactionModal()" class="bg-reneo-600 text-white font-bold text-xs px-4 py-2.5 rounded-reneo-sm shadow hover:bg-reneo-700 transition flex items-center gap-2 w-fit">
+          <i class="fa-solid fa-plus"></i> Tambah Transaksi
+        </button>
+      </div>
+
+      <div class="bg-white p-4 rounded-reneo border border-reneo-100 shadow-sm space-y-3">
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">Cari Catatan/Kategori</label>
+            <input type="text" id="txSearchInput" oninput="renderTransactions()" placeholder="Ketik pencarian..." class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">Jenis</label>
+            <select id="txTypeFilter" onchange="renderTransactions()" class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+              <option value="all">Semua Jenis</option>
+              <option value="income">Uang Masuk</option>
+              <option value="expense">Uang Keluar</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] font-medium text-gray-500 mb-1">Kategori</label>
+            <select id="txCategoryFilter" onchange="renderTransactions()" class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-1.5 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+              <option value="all">Semua Kategori</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-reneo border border-reneo-100 shadow-reneo overflow-hidden">
+        <div id="fullTxList" class="divide-y divide-gray-100"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: ANGGARAN -->
+    <section id="view-budgets" class="space-y-5 hidden">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-reneo-900">Anggaran Bulanan</h2>
+          <p class="text-xs text-gray-500">Batas pengeluaran per kategori agar tidak boros</p>
+        </div>
+        <button onclick="openBudgetModal()" class="bg-reneo-600 text-white font-bold text-xs px-4 py-2.5 rounded-reneo-sm shadow hover:bg-reneo-700 transition flex items-center gap-2 w-fit">
+          <i class="fa-solid fa-plus"></i> Buat / Edit Anggaran
+        </button>
+      </div>
+      <div id="budgetCardsList" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </section>
+
+    <!-- VIEW: LAPORAN -->
+    <section id="view-reports" class="space-y-5 hidden">
+      <div class="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-reneo-900">Laporan Keuangan</h2>
+          <p class="text-xs text-gray-500">Analisis pengeluaran dan arus kas</p>
+        </div>
+        <button onclick="exportCSV()" class="bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-reneo-sm shadow hover:bg-emerald-700 transition flex items-center gap-2 w-fit">
+          <i class="fa-solid fa-file-excel"></i> Ekspor CSV (Excel)
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div class="bg-white p-4 rounded-reneo border border-reneo-100 shadow-sm">
+          <span class="text-xs font-semibold text-gray-500">Total Uang Masuk</span>
+          <div id="repTotalIncome" class="text-xl font-bold text-income mt-1">Rp0</div>
+        </div>
+        <div class="bg-white p-4 rounded-reneo border border-reneo-100 shadow-sm">
+          <span class="text-xs font-semibold text-gray-500">Total Uang Keluar</span>
+          <div id="repTotalExpense" class="text-xl font-bold text-expense mt-1">Rp0</div>
+        </div>
+        <div class="bg-white p-4 rounded-reneo border border-reneo-100 shadow-sm">
+          <span class="text-xs font-semibold text-gray-500">Selisih (Net Cash Flow)</span>
+          <div id="repNetCash" class="text-xl font-bold text-reneo-900 mt-1">Rp0</div>
+        </div>
+      </div>
+
+      <div class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo">
+        <h3 class="font-bold text-reneo-900 text-sm mb-4">Pengeluaran Per Kategori</h3>
+        <div id="repCategoryBreakdown" class="space-y-4"></div>
+      </div>
+    </section>
+
+    <!-- VIEW: LAINNYA -->
+    <section id="view-more" class="space-y-5 hidden">
+      <div>
+        <h2 class="text-2xl font-bold text-reneo-900">Menu & Pengaturan</h2>
+        <p class="text-xs text-gray-500">Fitur pendukung keuangan rumah tangga</p>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+        <button onclick="openSubPage('bills')" class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo hover:shadow-reneo-hover transition text-left group">
+          <div class="w-10 h-10 rounded-reneo-sm bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-lg mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-receipt"></i>
+          </div>
+          <h3 class="font-bold text-reneo-900 text-sm">Tagihan Rutin</h3>
+          <p class="text-[11px] text-gray-500 mt-1">Listrik, Wi-Fi, Air, dll</p>
+        </button>
+
+        <button onclick="openSubPage('debts')" class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo hover:shadow-reneo-hover transition text-left group">
+          <div class="w-10 h-10 rounded-reneo-sm bg-rose-100 text-rose-700 flex items-center justify-center font-bold text-lg mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+          <h3 class="font-bold text-reneo-900 text-sm">Catatan Utang</h3>
+          <p class="text-[11px] text-gray-500 mt-1">Utang & Riwayat Bayar</p>
+        </button>
+
+        <button onclick="openSubPage('savings')" class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo hover:shadow-reneo-hover transition text-left group">
+          <div class="w-10 h-10 rounded-reneo-sm bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold text-lg mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-piggy-bank"></i>
+          </div>
+          <h3 class="font-bold text-reneo-900 text-sm">Target Tabungan</h3>
+          <p class="text-[11px] text-gray-500 mt-1">Dana Darurat / Impian</p>
+        </button>
+
+        <button onclick="openSubPage('categories')" class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo hover:shadow-reneo-hover transition text-left group">
+          <div class="w-10 h-10 rounded-reneo-sm bg-reneo-100 text-reneo-700 flex items-center justify-center font-bold text-lg mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-tags"></i>
+          </div>
+          <h3 class="font-bold text-reneo-900 text-sm">Kelola Kategori</h3>
+          <p class="text-[11px] text-gray-500 mt-1">Tambah & Edit Pos</p>
+        </button>
+
+        <button onclick="openSubPage('backup')" class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo hover:shadow-reneo-hover transition text-left group col-span-2 sm:col-span-1">
+          <div class="w-10 h-10 rounded-reneo-sm bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-lg mb-3 group-hover:scale-110 transition">
+            <i class="fa-solid fa-database"></i>
+          </div>
+          <h3 class="font-bold text-reneo-900 text-sm">Data & Cadangan</h3>
+          <p class="text-[11px] text-gray-500 mt-1">Backup JSON & Reset</p>
+        </button>
+      </div>
+
+      <div class="bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo space-y-3">
+        <h3 class="font-bold text-reneo-900 text-sm flex items-center gap-2">
+          <i class="fa-solid fa-circle-info text-reneo-600"></i> Tentang Aplikasi & Keamanan Data
+        </h3>
+        <p class="text-xs text-gray-600 leading-relaxed">
+          Semua data keuangan Anda disimpan <strong>100% secara lokal</strong> di memori browser HP/perangkat ini. Aplikasi ini tidak mengirim data ke internet atau server luar manapun.
+        </p>
+        <div class="bg-reneo-50 p-3 rounded-reneo-sm border border-reneo-200 text-[11px] text-reneo-900 space-y-1">
+          <p><strong>Tips Ibu:</strong> Lakukan backup cadangan file JSON secara rutin ke Google Drive/WhatsApp sendiri agar data tetap aman jika HP berganti browser.</p>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-reneo-100 px-4 py-2">
+    <div class="max-w-md mx-auto flex justify-between items-center text-center">
+      <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-btn flex-1 py-1 text-reneo-600 font-bold transition">
+        <i class="fa-solid fa-house text-lg block"></i>
+        <span class="text-[10px] block mt-0.5">Beranda</span>
+      </button>
+      <button onclick="switchTab('transactions')" id="nav-transactions" class="nav-btn flex-1 py-1 text-gray-400 hover:text-reneo-600 font-medium transition">
+        <i class="fa-solid fa-receipt text-lg block"></i>
+        <span class="text-[10px] block mt-0.5">Transaksi</span>
+      </button>
+      <button onclick="openVoiceModal()" class="w-12 h-12 -mt-5 rounded-full bg-reneo-600 text-white shadow-lg flex items-center justify-center hover:bg-reneo-700 active:scale-95 transition border-4 border-white">
+        <i class="fa-solid fa-microphone text-lg"></i>
+      </button>
+      <button onclick="switchTab('budgets')" id="nav-budgets" class="nav-btn flex-1 py-1 text-gray-400 hover:text-reneo-600 font-medium transition">
+        <i class="fa-solid fa-pie-chart text-lg block"></i>
+        <span class="text-[10px] block mt-0.5">Anggaran</span>
+      </button>
+      <button onclick="switchTab('reports')" id="nav-reports" class="nav-btn flex-1 py-1 text-gray-400 hover:text-reneo-600 font-medium transition">
+        <i class="fa-solid fa-chart-column text-lg block"></i>
+        <span class="text-[10px] block mt-0.5">Laporan</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- MODALS -->
+  <div id="modalOpeningBalance" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-md rounded-reneo p-6 shadow-2xl space-y-4">
+      <div class="text-center space-y-2">
+        <div class="w-12 h-12 rounded-full bg-reneo-100 text-reneo-600 flex items-center justify-center mx-auto text-xl font-bold">
+          <i class="fa-solid fa-hand-holding-heart"></i>
+        </div>
+        <h3 class="text-xl font-extrabold text-reneo-900">Selamat Datang, Ibu!</h3>
+        <p class="text-xs text-gray-500">Mari atur saldo awal dompet / rekening yang Anda miliki saat ini.</p>
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal Saldo Awal (Rp)</label>
+        <input type="number" id="inputOpeningBalance" placeholder="Contoh: 1500000" class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-4 py-3 text-lg font-bold text-reneo-900 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+        <p class="text-[11px] text-gray-400 mt-1">Bisa dikosongkan (0) jika ingin mulai dari nol.</p>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button onclick="saveOpeningBalance()" class="w-full bg-reneo-600 hover:bg-reneo-700 text-white font-bold py-3 rounded-reneo-sm shadow transition">Simpan & Mulai</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalTransaction" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-lg rounded-reneo p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <h3 id="modalTxTitle" class="text-lg font-bold text-reneo-900">Catat Transaksi</h3>
+        <button onclick="closeModal('modalTransaction')" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+      </div>
+      <form id="formTransaction" onsubmit="handleTransactionSubmit(event)" class="space-y-4">
+        <input type="hidden" id="txId">
+        <div class="grid grid-cols-2 gap-2 p-1 bg-reneo-50 rounded-reneo-sm">
+          <button type="button" id="btnTypeExpense" onclick="setTxTypeForm('expense')" class="py-2 text-xs font-bold rounded-lg transition bg-white text-expense shadow-sm">
+            <i class="fa-solid fa-arrow-up-right"></i> Uang Keluar
+          </button>
+          <button type="button" id="btnTypeIncome" onclick="setTxTypeForm('income')" class="py-2 text-xs font-bold rounded-lg transition text-gray-500">
+            <i class="fa-solid fa-arrow-down-left"></i> Uang Masuk
+          </button>
+        </div>
+        <input type="hidden" id="txType" value="expense">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Nominal (Rp) *</label>
+          <input type="number" id="txAmount" required min="1" step="1" placeholder="0" class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-4 py-2.5 text-xl font-bold text-reneo-900 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Kategori *</label>
+            <select id="txCategory" required class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600"></select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-700 mb-1">Tanggal *</label>
+            <input type="date" id="txDate" required class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Catatan / Keterangan</label>
+          <input type="text" id="txNote" placeholder="Contoh: Belanja pasar minggu pagi" class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalTransaction')" class="w-1/3 bg-gray-100 text-gray-700 font-bold py-2.5 rounded-reneo-sm text-xs">Batal</button>
+          <button type="submit" class="w-2/3 bg-reneo-600 hover:bg-reneo-700 text-white font-bold py-2.5 rounded-reneo-sm text-xs shadow transition">Simpan Catatan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modalVoice" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-md rounded-reneo p-6 shadow-2xl space-y-4 text-center">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+        <h3 class="text-base font-bold text-reneo-900">Input Catatan Suara</h3>
+        <button onclick="closeModal('modalVoice')" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+      </div>
+      <div class="py-4 space-y-3">
+        <div id="voicePulseCircle" class="w-20 h-20 rounded-full bg-reneo-100 text-reneo-600 flex items-center justify-center mx-auto text-3xl font-bold transition">
+          <i class="fa-solid fa-microphone"></i>
+        </div>
+        <p id="voiceStatusText" class="text-xs font-semibold text-reneo-700">Tekan tombol mikrofon lalu bicara...</p>
+        <p class="text-[11px] text-gray-400">Contoh: <i>"Pengeluaran dua puluh ribu untuk sayur hari ini"</i></p>
+      </div>
+      <div id="voiceTranscriptBox" class="bg-reneo-50 p-3 rounded-reneo-sm text-left border border-reneo-200 hidden">
+        <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">Hasil Ucapan:</span>
+        <p id="voiceTranscriptText" class="text-xs text-gray-800 italic">"..."</p>
+      </div>
+      <div class="flex gap-2 pt-2">
+        <button id="btnStartVoice" onclick="startSpeechRecognition()" class="w-full bg-reneo-600 hover:bg-reneo-700 text-white font-bold py-2.5 rounded-reneo-sm text-xs shadow transition flex items-center justify-center gap-2">
+          <i class="fa-solid fa-microphone"></i> Mulai Bicara
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div id="modalSubPage" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-2xl rounded-reneo p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-3">
+        <h3 id="subPageTitle" class="text-lg font-bold text-reneo-900">Judul Sub Page</h3>
+        <button onclick="closeModal('modalSubPage')" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+      </div>
+      <div id="subPageContent" class="space-y-4"></div>
+    </div>
+  </div>
+
+  <div id="modalBudgetForm" class="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 hidden">
+    <div class="bg-white w-full max-w-md rounded-reneo p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-gray-100 pb-2">
+        <h3 class="text-base font-bold text-reneo-900">Atur Anggaran Kategori</h3>
+        <button onclick="closeModal('modalBudgetForm')" class="text-gray-400 hover:text-gray-600 text-xl font-bold">&times;</button>
+      </div>
+      <form onsubmit="handleBudgetSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Pilih Kategori Pengeluaran</label>
+          <select id="budgetCategorySelect" required class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-2 text-xs text-gray-800 focus:outline-none focus:ring-2 focus:ring-reneo-600"></select>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-700 mb-1">Batas Anggaran Bulanan (Rp)</label>
+          <input type="number" id="budgetAmountInput" required min="1000" step="1000" placeholder="Contoh: 500000" class="w-full bg-reneo-50 border border-reneo-200 rounded-reneo-sm px-3 py-2 text-sm font-bold text-reneo-900 focus:outline-none focus:ring-2 focus:ring-reneo-600">
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button type="button" onclick="closeModal('modalBudgetForm')" class="w-1/3 bg-gray-100 text-gray-700 font-bold py-2 rounded-reneo-sm text-xs">Batal</button>
+          <button type="submit" class="w-2/3 bg-reneo-600 text-white font-bold py-2 rounded-reneo-sm text-xs shadow">Simpan Anggaran</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const STORAGE_KEY = 'reneofinance_data_v1';
+    const SCHEMA_VERSION = 1;
+
+    const DEFAULT_CATEGORIES = [
+      { id: 'cat-inc-1', name: 'Gaji / Uang Bulanan', type: 'income', icon: 'fa-wallet' },
+      { id: 'cat-inc-2', name: 'Hasil Usaha / Dagang', type: 'income', icon: 'fa-store' },
+      { id: 'cat-inc-3', name: 'Pemasukan Lain', type: 'income', icon: 'fa-coins' },
+      { id: 'cat-exp-1', name: 'Belanja Dapur & Sayur', type: 'expense', icon: 'fa-basket-shopping' },
+      { id: 'cat-exp-2', name: 'Beras & Sembako', type: 'expense', icon: 'fa-wheat-awn' },
+      { id: 'cat-exp-3', name: 'Listrik, Air & Wi-Fi', type: 'expense', icon: 'fa-bolt' },
+      { id: 'cat-exp-4', name: 'Sabun & Kebutuhan Rumah', type: 'expense', icon: 'fa-pump-soap' },
+      { id: 'cat-exp-5', name: 'Pendidikan & Anak', type: 'expense', icon: 'fa-graduation-cap' },
+      { id: 'cat-exp-6', name: 'Cicilan / Utang', type: 'expense', icon: 'fa-credit-card' },
+      { id: 'cat-exp-7', name: 'Kesehatan & Obat', type: 'expense', icon: 'fa-kit-medical' },
+      { id: 'cat-exp-8', name: 'Lain-lain', type: 'expense', icon: 'fa-ellipsis' }
+    ];
+
+    let appState = {
+      schemaVersion: SCHEMA_VERSION,
+      settings: { currency: 'IDR', openingBalance: null, onboardingCompleted: false },
+      categories: [...DEFAULT_CATEGORIES],
+      transactions: [],
+      budgets: [],
+      bills: [],
+      debts: [],
+      debtPayments: [],
+      savingsGoals: []
+    };
+
+    function initApp() {
+      loadStateFromStorage();
+      const now = new Date();
+      document.getElementById('dashMonthFilter').value = now.toISOString().substring(0, 7);
+      const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+      document.getElementById('dashTodayDate').textContent = now.toLocaleDateString('id-ID', options);
+      if (appState.settings.openingBalance === null) openOpeningBalanceModal();
+      renderDashboard(); renderTransactions(); renderBudgets(); renderReports();
+      registerServiceWorker();
+    }
+
+    function loadStateFromStorage() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+          const parsed = JSON.parse(data);
+          if (parsed && parsed.schemaVersion === SCHEMA_VERSION) appState = { ...appState, ...parsed };
+        }
+      } catch (e) { console.error('Gagal membaca LocalStorage:', e); }
+    }
+
+    function saveStateToStorage() {
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(appState)); }
+      catch (e) { alert('Gagal menyimpan data ke memori perangkat.'); }
+    }
+
+    function formatRupiah(amount) {
+      const val = Number(amount) || 0;
+      return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
+    }
+    function generateId() { return 'id-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9); }
+
+    function calculateTotalBalance() {
+      const opening = Number(appState.settings.openingBalance) || 0;
+      const inc = appState.transactions.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+      const exp = appState.transactions.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+      return opening + inc - exp;
+    }
+    function calculatePeriodSummary(y) {
+      const p = appState.transactions.filter(t => t.date.startsWith(y));
+      const inc = p.filter(t => t.type === 'income').reduce((s, t) => s + Number(t.amount), 0);
+      const exp = p.filter(t => t.type === 'expense').reduce((s, t) => s + Number(t.amount), 0);
+      return { income: inc, expense: exp, net: inc - exp };
+    }
+
+    function switchTab(tabName) {
+      const views = ['dashboard', 'transactions', 'budgets', 'reports', 'more'];
+      views.forEach(v => {
+        const el = document.getElementById(`view-${v}`); if (el) el.classList.add('hidden');
+        const btn = document.getElementById(`nav-${v}`);
+        if (btn) { btn.classList.remove('text-reneo-600', 'font-bold'); btn.classList.add('text-gray-400', 'font-medium'); }
+      });
+      const av = document.getElementById(`view-${tabName}`); if (av) av.classList.remove('hidden');
+      const ab = document.getElementById(`nav-${tabName}`);
+      if (ab) { ab.classList.remove('text-gray-400', 'font-medium'); ab.classList.add('text-reneo-600', 'font-bold'); }
+      if (tabName === 'dashboard') renderDashboard();
+      if (tabName === 'transactions') renderTransactions();
+      if (tabName === 'budgets') renderBudgets();
+      if (tabName === 'reports') renderReports();
+    }
+
+    function renderDashboard() {
+      const m = document.getElementById('dashMonthFilter').value;
+      document.getElementById('dashTotalBalance').textContent = formatRupiah(calculateTotalBalance());
+      const ps = calculatePeriodSummary(m);
+      document.getElementById('dashPeriodIncome').textContent = formatRupiah(ps.income);
+      document.getElementById('dashPeriodExpense').textContent = formatRupiah(ps.expense);
+      renderDashboardChart(m); renderDashboardBudgetWidget(m); renderDashboardBillsWidget(); renderDashboardRecentTx();
+    }
+
+    function renderDashboardChart() {
+      const c = document.getElementById('dashChartContainer'); c.innerHTML = '';
+      const txs = appState.transactions;
+      if (txs.length === 0) { c.innerHTML = `<p class="text-xs text-gray-400 text-center w-full py-8">Belum ada transaksi untuk grafik.</p>`; return; }
+      const dm = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const ds = d.toISOString().split('T')[0];
+        dm[ds] = { label: d.toLocaleDateString('id-ID', { weekday: 'short' }), expense: 0, income: 0 };
+      }
+      txs.forEach(t => { if (dm[t.date]) { if (t.type === 'expense') dm[t.date].expense += Number(t.amount); if (t.type === 'income') dm[t.date].income += Number(t.amount); } });
+      const mx = Math.max(...Object.values(dm).map(d => Math.max(d.expense, d.income)), 10000);
+      Object.values(dm).forEach(day => {
+        const eh = Math.round((day.expense / mx) * 100);
+        const ih = Math.round((day.income / mx) * 100);
+        const g = document.createElement('div');
+        g.className = 'flex flex-col items-center flex-1 h-full justify-end gap-1';
+        g.innerHTML = `<div class="w-full flex items-end justify-center gap-1 h-32"><div style="height: ${Math.max(ih, 5)}%" class="w-2.5 bg-emerald-400 rounded-t-sm" title="Masuk: ${formatRupiah(day.income)}"></div><div style="height: ${Math.max(eh, 5)}%" class="w-2.5 bg-rose-400 rounded-t-sm" title="Keluar: ${formatRupiah(day.expense)}"></div></div><span class="text-[10px] text-gray-400 font-medium">${day.label}</span>`;
+        c.appendChild(g);
+      });
+    }
+
+    function renderDashboardBudgetWidget(m) {
+      const c = document.getElementById('dashBudgetWidget'); c.innerHTML = '';
+      const bs = appState.budgets.filter(b => b.month === m);
+      if (bs.length === 0) { c.innerHTML = `<p class="text-xs text-gray-400 italic">Belum ada anggaran diatur untuk bulan ini.</p>`; return; }
+      bs.forEach(b => {
+        const cat = appState.categories.find(x => x.id === b.categoryId); if (!cat) return;
+        const spent = appState.transactions.filter(t => t.type === 'expense' && t.categoryId === b.categoryId && t.date.startsWith(m)).reduce((s, t) => s + Number(t.amount), 0);
+        const pct = Math.min(Math.round((spent / b.amount) * 100), 100);
+        let badge = `<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full font-bold">Aman</span>`;
+        let color = 'bg-reneo-600';
+        if (pct >= 100 || spent > b.amount) { badge = `<span class="text-[10px] bg-rose-100 text-rose-700 px-2 py-0.5 rounded-full font-bold">Over Budget!</span>`; color = 'bg-rose-500'; }
+        else if (pct >= 80) { badge = `<span class="text-[10px] bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-bold">Waspada 80%</span>`; color = 'bg-amber-500'; }
+        const d = document.createElement('div'); d.className = 'space-y-1 text-xs';
+        d.innerHTML = `<div class="flex justify-between items-center"><span class="font-semibold text-gray-800">${cat.name}</span><div class="flex items-center gap-2"><span class="text-gray-500">${formatRupiah(spent)} / ${formatRupiah(b.amount)}</span>${badge}</div></div><div class="w-full h-2 bg-reneo-50 rounded-full overflow-hidden border border-reneo-100"><div class="h-full ${color} transition-all duration-300" style="width: ${pct}%"></div></div>`;
+        c.appendChild(d);
+      });
+    }
+
+    function renderDashboardBillsWidget() {
+      const c = document.getElementById('dashBillsWidget'); c.innerHTML = '';
+      const u = appState.bills.filter(b => b.status === 'unpaid');
+      if (u.length === 0) { c.innerHTML = `<p class="text-xs text-emerald-600 font-medium">Semua tagihan rutin sudah lunas! 👍</p>`; return; }
+      u.slice(0, 3).forEach(b => {
+        const d = document.createElement('div'); d.className = 'flex items-center justify-between p-2.5 bg-reneo-50 rounded-reneo-sm text-xs border border-reneo-100';
+        d.innerHTML = `<div><span class="font-bold text-reneo-900 block">${b.name}</span><span class="text-[10px] text-gray-400">Jatuh Tempo: ${b.dueDate}</span></div><div class="text-right flex items-center gap-3"><span class="font-bold text-expense">${formatRupiah(b.amount)}</span><button onclick="payBill('${b.id}')" class="bg-reneo-600 hover:bg-reneo-700 text-white font-bold text-[10px] px-2.5 py-1 rounded-md transition">Bayar</button></div>`;
+        c.appendChild(d);
+      });
+    }
+
+    function renderDashboardRecentTx() {
+      const c = document.getElementById('dashRecentTxList'); c.innerHTML = '';
+      const r = [...appState.transactions].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 4);
+      if (r.length === 0) { c.innerHTML = `<p class="text-xs text-gray-400 py-4 text-center">Belum ada transaksi tercatat.</p>`; return; }
+      r.forEach(t => {
+        const cat = appState.categories.find(x => x.id === t.categoryId) || { name: 'Umum', icon: 'fa-tag' };
+        const isInc = t.type === 'income';
+        const d = document.createElement('div'); d.className = 'py-2.5 flex items-center justify-between text-xs';
+        d.innerHTML = `<div class="flex items-center gap-3"><div class="w-8 h-8 rounded-full ${isInc ? 'bg-income-soft text-income' : 'bg-expense-soft text-expense'} flex items-center justify-center font-bold"><i class="fa-solid ${cat.icon || 'fa-tag'}"></i></div><div><span class="font-bold text-reneo-900 block">${t.note || cat.name}</span><span class="text-[10px] text-gray-400">${t.date} • ${cat.name}</span></div></div><span class="font-extrabold ${isInc ? 'text-income' : 'text-expense'}">${isInc ? '+' : '-'}${formatRupiah(t.amount)}</span>`;
+        c.appendChild(d);
+      });
+    }
+
+    function renderTransactions() {
+      const c = document.getElementById('fullTxList'); c.innerHTML = '';
+      const q = document.getElementById('txSearchInput').value.toLowerCase();
+      const tf = document.getElementById('txTypeFilter').value;
+      const cf = document.getElementById('txCategoryFilter').value;
+      const sel = document.getElementById('txCategoryFilter');
+      sel.innerHTML = '<option value="all">Semua Kategori</option>';
+      appState.categories.forEach(x => { sel.innerHTML += `<option value="${x.id}">${x.name}</option>`; });
+      sel.value = cf;
+      let f = appState.transactions.filter(t => {
+        const cat = appState.categories.find(x => x.id === t.categoryId);
+        const ms = (t.note || '').toLowerCase().includes(q) || (cat && cat.name.toLowerCase().includes(q));
+        return ms && (tf === 'all' || t.type === tf) && (cf === 'all' || t.categoryId === cf);
+      });
+      f.sort((a, b) => new Date(b.date) - new Date(a.date));
+      if (f.length === 0) { c.innerHTML = `<p class="text-xs text-gray-400 py-8 text-center">Tidak ada transaksi ditemukan.</p>`; return; }
+      f.forEach(t => {
+        const cat = appState.categories.find(x => x.id === t.categoryId) || { name: 'Umum', icon: 'fa-tag' };
+        const isInc = t.type === 'income';
+        const d = document.createElement('div'); d.className = 'p-3 hover:bg-reneo-50 transition flex items-center justify-between text-xs';
+        d.innerHTML = `<div class="flex items-center gap-3"><div class="w-9 h-9 rounded-full ${isInc ? 'bg-income-soft text-income' : 'bg-expense-soft text-expense'} flex items-center justify-center font-bold text-sm"><i class="fa-solid ${cat.icon || 'fa-tag'}"></i></div><div><span class="font-bold text-reneo-900 block">${t.note || cat.name}</span><span class="text-[10px] text-gray-400">${t.date} • ${cat.name}</span></div></div><div class="flex items-center gap-3"><span class="font-extrabold text-sm ${isInc ? 'text-income' : 'text-expense'}">${isInc ? '+' : '-'}${formatRupiah(t.amount)}</span><button onclick="editTransaction('${t.id}')" class="text-gray-400 hover:text-reneo-600 px-1"><i class="fa-solid fa-pen"></i></button><button onclick="deleteTransaction('${t.id}')" class="text-gray-400 hover:text-rose-600 px-1"><i class="fa-solid fa-trash"></i></button></div>`;
+        c.appendChild(d);
+      });
+    }
+
+    function openTransactionModal(type = 'expense') {
+      document.getElementById('formTransaction').reset();
+      document.getElementById('txId').value = '';
+      document.getElementById('modalTxTitle').textContent = 'Catat Transaksi Baru';
+      document.getElementById('txDate').value = new Date().toISOString().split('T')[0];
+      setTxTypeForm(type);
+      document.getElementById('modalTransaction').classList.remove('hidden');
+    }
+
+    function setTxTypeForm(type) {
+      document.getElementById('txType').value = type;
+      const e = document.getElementById('btnTypeExpense');
+      const i = document.getElementById('btnTypeIncome');
+      if (type === 'expense') {
+        e.className = 'py-2 text-xs font-bold rounded-lg transition bg-white text-expense shadow-sm';
+        i.className = 'py-2 text-xs font-bold rounded-lg transition text-gray-500';
+      } else {
+        i.className = 'py-2 text-xs font-bold rounded-lg transition bg-white text-income shadow-sm';
+        e.className = 'py-2 text-xs font-bold rounded-lg transition text-gray-500';
+      }
+      populateCategorySelect(type);
+    }
+
+    function populateCategorySelect(type) {
+      const s = document.getElementById('txCategory'); s.innerHTML = '';
+      appState.categories.filter(c => c.type === type).forEach(c => { s.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+    }
+
+    function handleTransactionSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('txId').value;
+      const type = document.getElementById('txType').value;
+      const amount = Number(document.getElementById('txAmount').value);
+      const categoryId = document.getElementById('txCategory').value;
+      const date = document.getElementById('txDate').value;
+      const note = document.getElementById('txNote').value.trim();
+      if (!amount || amount <= 0) { alert('Nominal harus lebih besar dari 0.'); return; }
+      if (id) {
+        const i = appState.transactions.findIndex(t => t.id === id);
+        if (i !== -1) appState.transactions[i] = { ...appState.transactions[i], type, amount, categoryId, date, note };
+      } else {
+        appState.transactions.push({ id: generateId(), type, amount, categoryId, date, note, source: 'manual', createdAt: new Date().toISOString() });
+      }
+      saveStateToStorage(); closeModal('modalTransaction'); renderDashboard(); renderTransactions();
+    }
+
+    function editTransaction(id) {
+      const t = appState.transactions.find(x => x.id === id); if (!t) return;
+      document.getElementById('txId').value = t.id;
+      document.getElementById('txAmount').value = t.amount;
+      document.getElementById('txDate').value = t.date;
+      document.getElementById('txNote').value = t.note || '';
+      document.getElementById('modalTxTitle').textContent = 'Edit Transaksi';
+      setTxTypeForm(t.type);
+      document.getElementById('txCategory').value = t.categoryId;
+      document.getElementById('modalTransaction').classList.remove('hidden');
+    }
+
+    function deleteTransaction(id) {
+      if (confirm('Yakin ingin menghapus catatan ini?')) {
+        appState.transactions = appState.transactions.filter(t => t.id !== id);
+        saveStateToStorage(); renderDashboard(); renderTransactions();
+      }
+    }
+
+    let speechRecognitionInstance = null;
+
+    function openVoiceModal() {
+      document.getElementById('modalVoice').classList.remove('hidden');
+      document.getElementById('voiceTranscriptBox').classList.add('hidden');
+      document.getElementById('voiceStatusText').textContent = 'Tekan tombol mikrofon lalu bicara...';
+    }
+
+    function startSpeechRecognition() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) { alert('Fitur pengenal suara belum didukung di browser ini.'); return; }
+      speechRecognitionInstance = new SR();
+      speechRecognitionInstance.lang = 'id-ID';
+      speechRecognitionInstance.interimResults = false;
+      const circle = document.getElementById('voicePulseCircle');
+      const status = document.getElementById('voiceStatusText');
+      const box = document.getElementById('voiceTranscriptBox');
+      const text = document.getElementById('voiceTranscriptText');
+      circle.classList.add('animate-voice-pulse', 'bg-rose-100', 'text-rose-600');
+      status.textContent = 'Mendengarkan... Silakan bicara...';
+      speechRecognitionInstance.start();
+      speechRecognitionInstance.onresult = (e) => {
+        const r = e.results[0][0].transcript;
+        text.textContent = `"${r}"`;
+        box.classList.remove('hidden');
+        circle.classList.remove('animate-voice-pulse', 'bg-rose-100', 'text-rose-600');
+        status.textContent = 'Ucapan berhasil ditangkap! Memproses...';
+        parseVoiceTextAndPreview(r);
+      };
+      speechRecognitionInstance.onerror = () => {
+        circle.classList.remove('animate-voice-pulse', 'bg-rose-100', 'text-rose-600');
+        status.textContent = 'Gagal menangkap suara. Coba lagi.';
+      };
+    }
+
+    function parseVoiceTextAndPreview(text) {
+      const lower = text.toLowerCase();
+      let type = 'expense';
+      if (lower.includes('masuk') || lower.includes('gaji') || lower.includes('dapat')) type = 'income';
+      let amount = 0;
+      const nm = lower.match(/\d+/g);
+      if (nm) amount = parseInt(nm.join(''), 10);
+      else {
+        if (lower.includes('lima puluh ribu')) amount = 50000;
+        else if (lower.includes('dua puluh ribu')) amount = 20000;
+        else if (lower.includes('sepuluh ribu')) amount = 10000;
+        else if (lower.includes('seratus ribu')) amount = 100000;
+        else if (lower.includes('satu juta')) amount = 1000000;
+      }
+      closeModal('modalVoice'); openTransactionModal(type);
+      if (amount > 0) document.getElementById('txAmount').value = amount;
+      document.getElementById('txNote').value = text;
+    }
+
+    function renderBudgets() {
+      const c = document.getElementById('budgetCardsList'); c.innerHTML = '';
+      const m = document.getElementById('dashMonthFilter').value;
+      appState.categories.filter(x => x.type === 'expense').forEach(cat => {
+        const b = appState.budgets.find(x => x.categoryId === cat.id && x.month === m);
+        const spent = appState.transactions.filter(t => t.type === 'expense' && t.categoryId === cat.id && t.date.startsWith(m)).reduce((s, t) => s + Number(t.amount), 0);
+        const ba = b ? b.amount : 0;
+        const pct = ba > 0 ? Math.min(Math.round((spent / ba) * 100), 100) : 0;
+        const card = document.createElement('div');
+        card.className = 'bg-white p-5 rounded-reneo border border-reneo-100 shadow-reneo space-y-3';
+        card.innerHTML = `<div class="flex justify-between items-start"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-reneo-sm bg-reneo-100 text-reneo-700 flex items-center justify-center font-bold"><i class="fa-solid ${cat.icon || 'fa-tag'}"></i></div><div><h4 class="font-bold text-reneo-900 text-sm">${cat.name}</h4><span class="text-[10px] text-gray-400">Target Anggaran</span></div></div><button onclick="openBudgetFormForCategory('${cat.id}')" class="text-xs bg-reneo-50 hover:bg-reneo-100 text-reneo-700 px-2.5 py-1.5 rounded-reneo-sm font-semibold transition">${b ? 'Edit' : '+ Set'}</button></div><div class="space-y-1 text-xs"><div class="flex justify-between font-semibold"><span class="text-gray-500">Terpakai: ${formatRupiah(spent)}</span><span class="text-reneo-900">${ba > 0 ? formatRupiah(ba) : 'Belum Diatur'}</span></div>${ba > 0 ? `<div class="w-full h-2.5 bg-reneo-50 rounded-full overflow-hidden border border-reneo-100"><div class="h-full ${pct >= 100 ? 'bg-rose-500' : pct >= 80 ? 'bg-amber-500' : 'bg-reneo-600'} transition-all duration-300" style="width: ${pct}%"></div></div><p class="text-[10px] text-gray-400 text-right">Sisa: ${formatRupiah(ba - spent)}</p>` : ''}</div>`;
+        c.appendChild(card);
+      });
+    }
+
+    function openBudgetModal() {
+      const s = document.getElementById('budgetCategorySelect'); s.innerHTML = '';
+      appState.categories.filter(x => x.type === 'expense').forEach(c => { s.innerHTML += `<option value="${c.id}">${c.name}</option>`; });
+      document.getElementById('modalBudgetForm').classList.remove('hidden');
+    }
+    function openBudgetFormForCategory(id) { openBudgetModal(); document.getElementById('budgetCategorySelect').value = id; }
+
+    function handleBudgetSubmit(e) {
+      e.preventDefault();
+      const catId = document.getElementById('budgetCategorySelect').value;
+      const amount = Number(document.getElementById('budgetAmountInput').value);
+      const m = document.getElementById('dashMonthFilter').value;
+      const i = appState.budgets.findIndex(b => b.categoryId === catId && b.month === m);
+      if (i !== -1) appState.budgets[i].amount = amount;
+      else appState.budgets.push({ id: generateId(), month: m, categoryId: catId, amount });
+      saveStateToStorage(); closeModal('modalBudgetForm'); renderBudgets(); renderDashboard();
+    }
+
+    function renderReports() {
+      const m = document.getElementById('dashMonthFilter').value;
+      const s = calculatePeriodSummary(m);
+      document.getElementById('repTotalIncome').textContent = formatRupiah(s.income);
+      document.getElementById('repTotalExpense').textContent = formatRupiah(s.expense);
+      document.getElementById('repNetCash').textContent = formatRupiah(s.net);
+      const c = document.getElementById('repCategoryBreakdown'); c.innerHTML = '';
+      const map = {};
+      appState.transactions.filter(t => t.type === 'expense' && t.date.startsWith(m)).forEach(t => { map[t.categoryId] = (map[t.categoryId] || 0) + Number(t.amount); });
+      if (Object.keys(map).length === 0) { c.innerHTML = `<p class="text-xs text-gray-400 italic text-center py-4">Belum ada pengeluaran bulan ini.</p>`; return; }
+      Object.entries(map).forEach(([cid, amt]) => {
+        const cat = appState.categories.find(x => x.id === cid) || { name: 'Lainnya' };
+        const pct = Math.round((amt / (s.expense || 1)) * 100);
+        const d = document.createElement('div'); d.className = 'space-y-1 text-xs';
+        d.innerHTML = `<div class="flex justify-between font-semibold text-gray-800"><span>${cat.name}</span><span>${formatRupiah(amt)} (${pct}%)</span></div><div class="w-full h-2 bg-reneo-50 rounded-full overflow-hidden"><div class="h-full bg-reneo-600" style="width: ${pct}%"></div></div>`;
+        c.appendChild(d);
+      });
+    }
+
+    function openSubPage(key) {
+      const modal = document.getElementById('modalSubPage');
+      const title = document.getElementById('subPageTitle');
+      const content = document.getElementById('subPageContent');
+      content.innerHTML = '';
+      if (key === 'bills') { title.textContent = 'Kelola Tagihan Rutin'; renderBillsSubPage(content); }
+      else if (key === 'debts') { title.textContent = 'Catatan Utang Rumah Tangga'; renderDebtsSubPage(content); }
+      else if (key === 'savings') { title.textContent = 'Target Tabungan'; renderSavingsSubPage(content); }
+      else if (key === 'categories') { title.textContent = 'Kelola Pos Kategori'; renderCategoriesSubPage(content); }
+      else if (key === 'backup') { title.textContent = 'Cadangan & Pemulihan Data'; renderBackupSubPage(content); }
+      modal.classList.remove('hidden');
+    }
+
+    function renderBillsSubPage(c) {
+      c.innerHTML = `<div class="flex justify-between items-center mb-3"><p class="text-xs text-gray-500">Tagihan rutin bulanan.</p><button onclick="promptAddBill()" class="bg-reneo-600 text-white font-bold text-xs px-3 py-1.5 rounded-reneo-sm">+ Tambah Tagihan</button></div><div class="space-y-2">${appState.bills.length === 0 ? '<p class="text-xs text-gray-400 py-4 text-center">Belum ada daftar tagihan.</p>' : ''}${appState.bills.map(b => `<div class="flex items-center justify-between p-3 bg-reneo-50 rounded-reneo-sm border border-reneo-100 text-xs"><div><span class="font-bold text-reneo-900 block">${b.name}</span><span class="text-[10px] text-gray-400">Jatuh Tempo: Tanggal ${b.dueDate}</span></div><div class="flex items-center gap-3"><span class="font-bold text-expense">${formatRupiah(b.amount)}</span>${b.status === 'unpaid' ? `<button onclick="payBill('${b.id}')" class="bg-reneo-600 text-white font-bold text-[10px] px-2.5 py-1 rounded-md">Bayar</button>` : '<span class="text-[10px] bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded font-bold">Lunas</span>'}<button onclick="deleteBill('${b.id}')" class="text-gray-400 hover:text-rose-600"><i class="fa-solid fa-trash"></i></button></div></div>`).join('')}</div>`;
+    }
+
+    function promptAddBill() {
+      const name = prompt('Nama Tagihan (contoh: Listrik PLN):'); if (!name) return;
+      const amount = Number(prompt('Estimasi Nominal (Rp):')); if (!amount) return;
+      const dueDate = prompt('Tanggal Jatuh Tempo (1-31):', '10');
+      appState.bills.push({ id: generateId(), name, amount, dueDate: dueDate || '10', status: 'unpaid' });
+      saveStateToStorage(); openSubPage('bills'); renderDashboard();
+    }
+
+    function payBill(id) {
+      const b = appState.bills.find(x => x.id === id); if (!b) return;
+      if (confirm(`Bayar tagihan "${b.name}" sebesar ${formatRupiah(b.amount)}?`)) {
+        b.status = 'paid';
+        const cat = appState.categories.find(x => x.type === 'expense') || { id: 'cat-exp-8' };
+        appState.transactions.push({ id: generateId(), type: 'expense', amount: b.amount, categoryId: cat.id, date: new Date().toISOString().split('T')[0], note: `Pembayaran: ${b.name}`, source: 'bill' });
+        saveStateToStorage(); renderDashboard(); openSubPage('bills');
+      }
+    }
+
+    function deleteBill(id) {
+      if (confirm('Hapus tagihan ini?')) {
+        appState.bills = appState.bills.filter(x => x.id !== id);
+        saveStateToStorage(); openSubPage('bills'); renderDashboard();
+      }
+    }
+
+    function renderDebtsSubPage(c) {
+      c.innerHTML = `<div class="flex justify-between items-center mb-3"><p class="text-xs text-gray-500">Catatan utang.</p><button onclick="promptAddDebt()" class="bg-reneo-600 text-white font-bold text-xs px-3 py-1.5 rounded-reneo-sm">+ Tambah Utang</button></div><div class="space-y-3">${appState.debts.length === 0 ? '<p class="text-xs text-gray-400 py-4 text-center">Tidak ada catatan utang.</p>' : ''}${appState.debts.map(d => { const paid = appState.debtPayments.filter(p => p.debtId === d.id).reduce((s, p) => s + Number(p.amount), 0); const rem = d.initialAmount - paid; return `<div class="p-4 bg-reneo-50 rounded-reneo-sm border border-reneo-100 text-xs space-y-2"><div class="flex justify-between items-start"><div><span class="font-bold text-reneo-900 text-sm block">${d.title}</span><span class="text-[10px] text-gray-400">Pihak: ${d.party || '-'}</span></div><span class="font-bold text-rose-600 text-sm">${formatRupiah(rem)}</span></div><div class="flex justify-between text-[11px] text-gray-500"><span>Awal: ${formatRupiah(d.initialAmount)}</span><span>Dibayar: ${formatRupiah(paid)}</span></div><div class="flex gap-2 pt-1">${rem > 0 ? `<button onclick="promptPayDebt('${d.id}')" class="bg-reneo-600 text-white font-bold text-[10px] px-3 py-1 rounded-md">Cicil / Bayar</button>` : '<span class="text-emerald-700 font-bold">LUNAS!</span>'}</div></div>`; }).join('')}</div>`;
+    }
+
+    function promptAddDebt() {
+      const title = prompt('Nama Utang:'); if (!title) return;
+      const initialAmount = Number(prompt('Total Nominal Utang (Rp):')); if (!initialAmount) return;
+      appState.debts.push({ id: generateId(), title, party: '', initialAmount, startDate: new Date().toISOString().split('T')[0] });
+      saveStateToStorage(); openSubPage('debts');
+    }
+
+    function promptPayDebt(debtId) {
+      const amount = Number(prompt('Nominal Pembayaran (Rp):')); if (!amount || amount <= 0) return;
+      appState.debtPayments.push({ id: generateId(), debtId, amount, date: new Date().toISOString().split('T')[0] });
+      const cat = appState.categories.find(x => x.name.includes('Utang') || x.type === 'expense') || { id: 'cat-exp-6' };
+      appState.transactions.push({ id: generateId(), type: 'expense', amount, categoryId: cat.id, date: new Date().toISOString().split('T')[0], note: 'Pembayaran Utang' });
+      saveStateToStorage(); renderDashboard(); openSubPage('debts');
+    }
+
+    function renderSavingsSubPage(c) {
+      c.innerHTML = `<div class="flex justify-between items-center mb-3"><p class="text-xs text-gray-500">Target impian keluarga.</p><button onclick="promptAddSavings()" class="bg-reneo-600 text-white font-bold text-xs px-3 py-1.5 rounded-reneo-sm">+ Tambah Target</button></div><div class="space-y-3">${appState.savingsGoals.length === 0 ? '<p class="text-xs text-gray-400 py-4 text-center">Belum ada target tabungan.</p>' : ''}${appState.savingsGoals.map(s => { const pct = Math.min(Math.round((s.savedAmount / s.targetAmount) * 100), 100); return `<div class="p-4 bg-reneo-50 rounded-reneo-sm border border-reneo-100 text-xs space-y-2"><div class="flex justify-between items-center"><span class="font-bold text-reneo-900 text-sm">${s.name}</span><span class="font-bold text-emerald-600">${formatRupiah(s.savedAmount)} / ${formatRupiah(s.targetAmount)}</span></div><div class="w-full h-2.5 bg-white rounded-full overflow-hidden border border-reneo-200"><div class="h-full bg-emerald-500" style="width: ${pct}%"></div></div><div class="flex justify-between items-center pt-1"><span class="text-[10px] text-gray-400">Tercapai ${pct}%</span><button onclick="promptUpdateSavings('${s.id}')" class="text-reneo-600 font-bold hover:underline">Update Tabungan</button></div></div>`; }).join('')}</div>`;
+    }
+
+    function promptAddSavings() {
+      const name = prompt('Nama Tabungan:'); if (!name) return;
+      const targetAmount = Number(prompt('Target Nominal (Rp):')); if (!targetAmount) return;
+      appState.savingsGoals.push({ id: generateId(), name, targetAmount, savedAmount: 0 });
+      saveStateToStorage(); openSubPage('savings');
+    }
+
+    function promptUpdateSavings(id) {
+      const g = appState.savingsGoals.find(s => s.id === id); if (!g) return;
+      const amount = Number(prompt(`Nominal Tabungan Saat Ini (${g.name}):`, g.savedAmount));
+      if (isNaN(amount)) return;
+      g.savedAmount = amount;
+      saveStateToStorage(); openSubPage('savings');
+    }
+
+    function renderCategoriesSubPage(c) {
+      c.innerHTML = `<div class="flex justify-between items-center mb-3"><p class="text-xs text-gray-500">Tambah atau atur pos.</p><button onclick="promptAddCategory()" class="bg-reneo-600 text-white font-bold text-xs px-3 py-1.5 rounded-reneo-sm">+ Tambah Pos</button></div><div class="space-y-2">${appState.categories.map(x => `<div class="flex items-center justify-between p-2.5 bg-reneo-50 rounded-reneo-sm text-xs border border-reneo-100"><div class="flex items-center gap-2"><i class="fa-solid ${x.icon || 'fa-tag'} text-reneo-600"></i><span class="font-bold text-reneo-900">${x.name}</span></div><span class="text-[10px] px-2 py-0.5 rounded font-bold uppercase ${x.type === 'income' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${x.type}</span></div>`).join('')}</div>`;
+    }
+
+    function promptAddCategory() {
+      const name = prompt('Nama Pos Baru:'); if (!name) return;
+      const type = confirm('OK = Kategori Pemasukan, Cancel = Pengeluaran.') ? 'income' : 'expense';
+      appState.categories.push({ id: generateId(), name, type, icon: 'fa-tag' });
+      saveStateToStorage(); openSubPage('categories');
+    }
+
+    function renderBackupSubPage(c) {
+      c.innerHTML = `<div class="space-y-4 text-xs"><div class="p-4 bg-reneo-50 rounded-reneo-sm border border-reneo-100 space-y-2"><h4 class="font-bold text-reneo-900 text-sm">Unduh Cadangan JSON</h4><p class="text-gray-500">Simpan seluruh data ke file .json.</p><button onclick="exportJSONBackup()" class="bg-reneo-600 text-white font-bold px-4 py-2 rounded-reneo-sm shadow">Unduh Backup JSON</button></div><div class="p-4 bg-reneo-50 rounded-reneo-sm border border-reneo-100 space-y-2"><h4 class="font-bold text-reneo-900 text-sm">Pulihkan dari JSON</h4><p class="text-gray-500">Upload file JSON cadangan.</p><input type="file" id="jsonFileInput" accept=".json" onchange="importJSONBackup(event)" class="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-reneo-sm file:border-0 file:text-xs file:font-semibold file:bg-reneo-100 file:text-reneo-700 hover:file:bg-reneo-200"/></div><div class="p-4 bg-rose-50 rounded-reneo-sm border border-rose-100 space-y-2"><h4 class="font-bold text-rose-900 text-sm">Reset Seluruh Data</h4><p class="text-rose-700">Hapus semua data. (Tidak dapat dibatalkan)</p><button onclick="resetAllData()" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-4 py-2 rounded-reneo-sm shadow">Reset Data</button></div></div>`;
+    }
+
+    function exportJSONBackup() {
+      const s = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(appState, null, 2));
+      const a = document.createElement('a');
+      a.setAttribute("href", s);
+      a.setAttribute("download", `reneo_backup_${new Date().toISOString().split('T')[0]}.json`);
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function importJSONBackup(e) {
+      const file = e.target.files[0]; if (!file) return;
+      const r = new FileReader();
+      r.onload = function(evt) {
+        try {
+          const p = JSON.parse(evt.target.result);
+          if (p && p.schemaVersion) {
+            if (confirm('Ganti seluruh data saat ini dengan file cadangan ini?')) {
+              appState = p; saveStateToStorage(); alert('Data berhasil dipulihkan!');
+              closeModal('modalSubPage'); initApp();
+            }
+          } else alert('Format JSON tidak valid.');
+        } catch (err) { alert('Gagal membaca file JSON.'); }
+      };
+      r.readAsText(file);
+    }
+
+    function resetAllData() {
+      if (confirm('PERINGATAN: Hapus SELURUH data keuangan?')) {
+        localStorage.removeItem(STORAGE_KEY); location.reload();
+      }
+    }
+
+    function exportCSV() {
+      if (appState.transactions.length === 0) { alert('Belum ada transaksi.'); return; }
+      let csv = "data:text/csv;charset=utf-8,Tanggal,Jenis,Kategori,Nominal,Catatan\n";
+      appState.transactions.forEach(t => {
+        const cat = appState.categories.find(x => x.id === t.categoryId) || { name: 'Umum' };
+        let n = (t.note || '').replace(/"/g, '""');
+        if (['=', '+', '-', '@'].includes(n.charAt(0))) n = "'" + n;
+        csv += [t.date, t.type === 'income' ? 'Pemasukan' : 'Pengeluaran', `"${cat.name}"`, t.amount, `"${n}"`].join(',') + "\n";
+      });
+      const u = encodeURI(csv);
+      const a = document.createElement('a');
+      a.setAttribute('href', u);
+      a.setAttribute('download', `laporan_reneo_${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    function openOpeningBalanceModal() { document.getElementById('modalOpeningBalance').classList.remove('hidden'); }
+
+    function saveOpeningBalance() {
+      const v = Number(document.getElementById('inputOpeningBalance').value) || 0;
+      appState.settings.openingBalance = v;
+      appState.settings.onboardingCompleted = true;
+      saveStateToStorage(); closeModal('modalOpeningBalance'); renderDashboard();
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+    /* === SERVICE WORKER — diperbaiki: daftarkan dari file sw.js (bukan blob) === */
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('./sw.js').catch(err => console.warn('SW registration gagal:', err));
+      }
+    }
+
+    window.onload = function() { initApp(); };
+  </script>
+</body>
+</html>
